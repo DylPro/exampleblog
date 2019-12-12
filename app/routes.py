@@ -1,12 +1,13 @@
-from flask import render_template, flash, redirect, url_for, request, g
+from flask import render_template, flash, redirect, url_for, request, g, current_app
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm, ResetPasswordRequestForm, ResetPasswordForm, SearchForm
 from flask_login import current_user, login_user, logout_user, login_required
-from flask_babel import get_locale
+from flask_babel import get_locale, _
 from app.models import User, Post
 from app.email import send_password_reset_email
 from werkzeug.urls import url_parse
 from datetime import datetime
+
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
@@ -21,7 +22,7 @@ def index():
         return redirect(url_for('index'))
     page = request.args.get('page', 1, type=int)
     posts = current_user.followed_posts().paginate(
-        page, app.config['POSTS_PER_PAGE'], False)
+        page, current_app.config['POSTS_PER_PAGE'], False)
     next_url = url_for('index', page=posts.next_num) \
         if posts.has_next else None
     prev_url = url_for('index', page=posts.prev_num) \
@@ -181,13 +182,13 @@ def reset_password(token):
 @login_required
 def search():
     if not g.search_form.validate():
-        return redirect(url_for('main.explore'))
+        return redirect(url_for('explore'))
     page = request.args.get('page', 1, type=int)
     posts, total = Post.search(g.search_form.q.data, page,
-                               app.config['POSTS_PER_PAGE'])
-    next_url = url_for('main.search', q=g.search_form.q.data, page=page + 1) \
-        if total > page * app.config['POSTS_PER_PAGE'] else None
-    prev_url = url_for('main.search', q=g.search_form.q.data, page=page - 1) \
+                               current_app.config['POSTS_PER_PAGE'])
+    next_url = url_for('search', q=g.search_form.q.data, page=page + 1) \
+        if total > page * current_app.config['POSTS_PER_PAGE'] else None
+    prev_url = url_for('search', q=g.search_form.q.data, page=page - 1) \
         if page > 1 else None
-    return render_template('search.html', title=('Search'), posts=posts,
+    return render_template('search.html', title=_('Search'), posts=posts,
                            next_url=next_url, prev_url=prev_url)

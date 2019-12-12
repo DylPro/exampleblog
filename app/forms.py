@@ -2,6 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, Length
 from app.models import User
+from flask_babel import _, lazy_gettext as _l
 from flask import request
 
 class LoginForm(FlaskForm):
@@ -59,7 +60,7 @@ class ResetPasswordForm(FlaskForm):
     submit = SubmitField('Request Password Reset')
 
 class SearchForm(FlaskForm):
-    q = StringField(('Search'), validators=[DataRequired()])
+    q = StringField(_l('Search'), validators=[DataRequired()])
 
     def __init__(self, *args, **kwargs):
         if 'formdata' not in kwargs:
